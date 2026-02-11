@@ -1,6 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <head>
+    <meta charset="UTF-8">
+    <!-- 禁止用户缩放，适配移动端 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>L1angcha Os</title>
+
+    <!-- 1. 设置主屏幕图标 (确保 icon.png 已上传到 GitHub 仓库) -->
+    <link rel="apple-touch-icon" href="icon.png">
+    <!-- 如果你想指定不同尺寸（可选，一般上面那个就够了） -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icon.png">
+
+    <!-- 2. 开启 Web App 模式 (添加到主屏幕后隐藏 Safari 地址栏) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- 3. 设置状态栏颜色 (default / black / black-translucent) -->
+    <!-- black-translucent 会让网页内容延伸到状态栏下面，看起来更像原生应用 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- 4. 设置添加到主屏幕后的标题 -->
+    <meta name="apple-mobile-web-app-title" content="L1angcha OS">
+
+    <!-- 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ... 这里保留你之前的 CSS 代码 ... */
+        /* 稍微修改一下 body padding 以适配沉浸式状态栏 */
+        body {
+            /* 如果使用了 black-translucent，顶部需要多一点 padding 防止遮挡 */
+            padding-top: env(safe-area-inset-top); 
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding-bottom: calc(var(--nav-height) + 20px);
+            overflow-x: hidden;
+            user-select: none;
+            /* 禁止长按弹出菜单，更像原生 App */
+            -webkit-touch-callout: none;
+        }
+        
+        /* 之前的 CSS 样式保持不变... */
+        :root {
+            /* ... 你的 CSS 变量 ... */
+            --bg-color: #fcf9f5;
+            --text-primary: #4a3b32;
+            --text-secondary: #8d7b72;
+            --card-bg: #e8ded4;
+            --card-bg-light: #f5ece5;
+            --accent-color: #a67c52;
+            --toggle-active: #a05e2b;
+            --danger-color: #d32f2f;
+            --shadow: 0 4px 12px rgba(74, 59, 50, 0.08);
+            --border-radius: 20px;
+            --nav-height: 70px;
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+        /* ... 其余 CSS ... */
+    </style>
+</head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>L1angcha Os Manager</title>
