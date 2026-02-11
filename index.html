@@ -2,24 +2,22 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 禁止用户缩放，适配移动端 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>L1angcha Os</title>
 
-    <!-- 核心修复：确保 href 路径正确，且标签没有被嵌套错误 -->
-    <link rel="apple-touch-icon" href="icon.png">
+    <!-- 【重要】请把下面 href 里的链接，换成你 icon.png 的【完整网址】 -->
+    <!-- 例如：https://nf100311.github.io/IOSRPOWER/icon.png -->
+    <!-- 只有写完整网址，添加到主屏幕才绝对不会出错 -->
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/nf100311/IOSRPOWER/main/icon.png">
 
-    <!-- 开启 Web App 模式 -->
+    <!-- Web App 配置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- 改回 black，避免透明模式导致的复杂布局问题，这是最稳妥的方案 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="L1angcha OS">
 
-    <!-- 引入 FontAwesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <style>
-    /* ...后面接着你的 style 样式... */
     <style>
         :root {
             --bg-color: #fcf9f5;
@@ -33,7 +31,9 @@
             --shadow: 0 4px 12px rgba(74, 59, 50, 0.08);
             --border-radius: 20px;
             --nav-height: 70px;
-            --safe-area-bottom: env(safe-area-inset-bottom);
+            /* 获取安全区域高度，防止被刘海遮挡 */
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * {
@@ -48,14 +48,20 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            padding-bottom: calc(var(--nav-height) + 20px);
+            /* 底部避让 Home 条 */
+            padding-bottom: calc(var(--nav-height) + 20px + var(--safe-bottom));
             overflow-x: hidden;
             user-select: none;
+            -webkit-touch-callout: none;
+            /* 整个页面背景延伸 */
+            min-height: 100vh;
         }
 
-        /* 顶部导航 */
+        /* 顶部导航修复版 */
         .header {
             padding: 20px 24px;
+            /* 顶部增加安全距离，防止被刘海挡住 */
+            padding-top: calc(20px + var(--safe-top)); 
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -63,6 +69,9 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            /* 增加一点模糊效果，看起来更像原生 App */
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.02);
         }
 
         .header h1 {
@@ -92,23 +101,19 @@
         }
         .power-btn:active { transform: scale(0.9); }
 
-        /* 页面容器 */
         .page {
             display: none;
             padding: 0 20px;
             animation: fadeIn 0.3s ease;
         }
         
-        .page.active {
-            display: block;
-        }
+        .page.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 卡片通用样式 */
         .card {
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
@@ -119,7 +124,6 @@
             overflow: hidden;
         }
 
-        /* 主页 - 运行状态卡片 */
         .status-card {
             height: 180px;
             background: linear-gradient(135deg, #e8ded4 0%, #dccbbd 100%);
@@ -168,7 +172,6 @@
             transform: rotate(-15deg);
         }
 
-        /* 统计栏 */
         .stats-row {
             display: flex;
             gap: 16px;
@@ -188,103 +191,24 @@
             overflow: hidden;
         }
 
-        .stat-label {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+        .stat-label { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .stat-value { font-size: 36px; font-weight: 700; color: #5d4037; margin-top: 10px; }
+        .stat-value-text { font-size: 20px; font-weight: 700; color: #5d4037; margin-top: 18px; }
+        .stat-icon-bg { position: absolute; right: -10px; bottom: -10px; opacity: 0.1; font-size: 80px; color: var(--text-primary); }
 
-        .stat-value {
-            font-size: 36px;
-            font-weight: 700;
-            color: #5d4037;
-            margin-top: 10px;
-        }
-        
-        .stat-value-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: #5d4037;
-            margin-top: 18px;
-        }
+        .update-card { background-color: #c4c4c4; color: #333; font-size: 14px; line-height: 1.4; }
 
-        .stat-icon-bg {
-            position: absolute;
-            right: -10px;
-            bottom: -10px;
-            opacity: 0.1;
-            font-size: 80px;
-            color: var(--text-primary);
-        }
-
-        /* 更新提示 */
-        .update-card {
-            background-color: #c4c4c4;
-            color: #333;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        /* 系统信息列表 */
-        .info-list {
-            background: var(--card-bg-light);
-            border-radius: var(--border-radius);
-            padding: 10px 0;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            align-items: center;
-        }
+        .info-list { background: var(--card-bg-light); border-radius: var(--border-radius); padding: 10px 0; }
+        .info-item { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); align-items: center; }
         .info-item:last-child { border-bottom: none; }
-
-        .info-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        
+        .info-label { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-secondary); }
         .info-label i { width: 20px; text-align: center; }
+        .info-value { font-weight: 600; color: var(--text-primary); }
 
-        .info-value {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* 插件页样式 */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 10px;
-            height: 40px;
-        }
-        
-        .search-container {
-            flex: 1;
-            display: none; /* 默认隐藏，点击图标显示 */
-            margin-right: 15px;
-        }
-        
-        .search-input {
-            width: 100%;
-            background: rgba(255,255,255,0.5);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 10px;
-            color: var(--text-primary);
-        }
-
-        .tool-icons {
-            display: flex;
-            gap: 15px;
-            margin-left: auto;
-        }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; height: 40px; }
+        .search-container { flex: 1; display: none; margin-right: 15px; }
+        .search-input { width: 100%; background: rgba(255,255,255,0.5); border: none; padding: 8px 12px; border-radius: 10px; color: var(--text-primary); font-size: 16px; }
+        .tool-icons { display: flex; gap: 15px; margin-left: auto; }
         .tool-icons i { font-size: 20px; color: var(--text-primary); cursor: pointer; }
 
         .plugin-card {
@@ -293,282 +217,55 @@
             min-height: 160px;
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s, opacity 0.3s;
+            transition: transform 0.2s;
         }
-
-        .plugin-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.4);
-            backdrop-filter: blur(5px);
-            z-index: 0;
-        }
-
-        .plugin-content {
-            position: relative;
-            z-index: 1;
-            color: var(--text-primary);
-        }
-
-        .plugin-tags {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        .tag {
-            background: rgba(255,255,255,0.6);
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            margin-right: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .plugin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .plugin-title {
-            font-size: 17px;
-            font-weight: 800;
-            margin-bottom: 4px;
-            max-width: 75%;
-            word-wrap: break-word;
-        }
-
-        .plugin-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .delete-btn {
-            color: var(--text-secondary);
-            font-size: 16px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
+        .plugin-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.4); backdrop-filter: blur(5px); z-index: 0; }
+        .plugin-content { position: relative; z-index: 1; color: var(--text-primary); }
+        .plugin-tags { margin-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+        .tag { background: rgba(255,255,255,0.6); padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; color: var(--text-primary); }
+        .plugin-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .plugin-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; max-width: 75%; word-wrap: break-word; }
+        .plugin-actions { display: flex; align-items: center; gap: 12px; }
+        .delete-btn { color: var(--text-secondary); font-size: 16px; cursor: pointer; }
         .delete-btn:hover { color: var(--danger-color); }
+        .plugin-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+        .plugin-desc { font-size: 13px; line-height: 1.4; color: var(--text-primary); opacity: 0.9; }
 
-        .plugin-meta {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-        }
-
-        .plugin-desc {
-            font-size: 13px;
-            line-height: 1.4;
-            color: var(--text-primary);
-            opacity: 0.9;
-        }
-
-        /* 开关样式 */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 26px;
-        }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        input:checked + .slider {
-            background-color: var(--toggle-active);
-        }
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--toggle-active); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* 模态框 (Add Plugin) */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 1000;
-            display: none;
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal {
-            background: var(--bg-color);
-            width: 85%;
-            max-width: 320px;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal h2 {
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 18px;
-        }
-
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal { background: var(--bg-color); width: 85%; max-width: 320px; border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal h2 { margin-bottom: 20px; text-align: center; font-size: 18px; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary); }
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            background: var(--card-bg-light);
-            border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 10px;
-            font-size: 14px;
-            color: var(--text-primary);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .form-control { width: 100%; padding: 10px; background: var(--card-bg-light); border: 1px solid rgba(0,0,0,0.05); border-radius: 10px; font-size: 14px; color: var(--text-primary); }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .btn-cancel { background: #e0e0e0; color: #555; }
         .btn-save { background: var(--toggle-active); color: white; }
 
-        /* 关于页面 */
-        .about-container {
-            text-align: center;
-            padding-top: 40px;
-        }
-        .avatar {
-            width: 100px;
-            height: 100px;
-            background: #d7ccc8;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: #fff;
-            box-shadow: var(--shadow);
-        }
+        .about-container { text-align: center; padding-top: 40px; }
+        .avatar { width: 100px; height: 100px; background: #d7ccc8; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #fff; box-shadow: var(--shadow); }
         .author-name { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
         .author-tag { color: var(--text-secondary); margin-bottom: 20px; display: block; text-decoration: none; }
-        .about-desc {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            text-align: left;
-            line-height: 1.6;
-            font-size: 14px;
-        }
+        .about-desc { background: var(--card-bg); padding: 20px; border-radius: 16px; text-align: left; line-height: 1.6; font-size: 14px; }
 
-        /* 底部 Tab 栏 */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: calc(var(--nav-height) + var(--safe-area-bottom));
-            background: var(--bg-color);
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            z-index: 200;
-        }
-
-        .tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #9e9e9e;
-            font-size: 10px;
-            cursor: pointer;
-            width: 60px;
-        }
-
+        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: calc(var(--nav-height) + var(--safe-bottom)); background: var(--bg-color); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); z-index: 200; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: #9e9e9e; font-size: 10px; cursor: pointer; width: 60px; }
         .tab-item.active { color: var(--text-primary); }
         .tab-icon { font-size: 20px; margin-bottom: 4px; position: relative; z-index: 2; }
-        
-        .tab-item.active .tab-icon::before {
-            content: '';
-            position: absolute;
-            width: 44px;
-            height: 28px;
-            background: #e8ded4;
-            z-index: -1;
-            border-radius: 14px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        .tab-item.active .tab-icon::before { content: ''; position: absolute; width: 44px; height: 28px; background: #e8ded4; z-index: -1; border-radius: 14px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-        /* 悬浮加号按钮 */
-        .fab {
-            position: fixed;
-            bottom: calc(var(--nav-height) + 30px);
-            right: 25px;
-            width: 56px;
-            height: 56px;
-            background: #e8ded4;
-            border-radius: 18px;
-            display: none; /* JS 控制显示 */
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            font-size: 24px;
-            color: #4e342e;
-            z-index: 150;
-            transition: transform 0.2s;
-        }
+        .fab { position: fixed; bottom: calc(var(--nav-height) + 30px + var(--safe-bottom)); right: 25px; width: 56px; height: 56px; background: #e8ded4; border-radius: 18px; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 24px; color: #4e342e; z-index: 150; transition: transform 0.2s; }
         .fab:active { transform: scale(0.95); }
 
-        /* Toast 消息提示 */
-        .toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 20px;
-            font-size: 14px;
-            z-index: 2000;
-            display: none;
-            backdrop-filter: blur(4px);
-        }
+        .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 12px 24px; border-radius: 20px; font-size: 14px; z-index: 2000; display: none; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -588,9 +285,9 @@
     <div id="home-view" class="page active">
         <div class="card status-card">
             <div class="status-title">
-                运行 <span class="status-badge">Free</span>
+                运行 <span class="status-badge">Shell</span>
             </div>
-            <div class="status-info">版本: beta0.1 | Pid: 13705</div>
+            <div class="status-info">版本: 14300 | Pid: 13705</div>
             <div class="bg-logo">
                 <i class="fa-brands fa-apple"></i>
             </div>
@@ -606,8 +303,8 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">IMEI</div>
-                <div class="stat-value-text">6083</div>
+                <div class="stat-label">权限</div>
+                <div class="stat-value-text">已获得</div>
                 <div class="stat-icon-bg">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
@@ -615,7 +312,7 @@
         </div>
 
         <div class="card update-card">
-           签名有效，插件安装成功。
+           Beta0.1版本 如遇不可逆的危险，请联系管理员获取相关数据。
         </div>
 
         <div class="info-list">
@@ -627,15 +324,15 @@
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fa-solid fa-microchip"></i> ABI 支持
+                    <i class="fa-solid fa-microchip"></i> Ask 支持
                 </div>
-                <div class="info-value">arm64e (A17 Pro)</div>
+                <div class="info-value">@Ramvi</div>
             </div>
             <div class="info-item">
                 <div class="info-label">
                     <i class="fa-solid fa-user-shield"></i> 上下文
                 </div>
-                <div class="info-value">root:wheel:xnu</div>
+                <div class="info-value">wheel:xnu</div>
             </div>
         </div>
     </div>
@@ -652,10 +349,7 @@
             </div>
         </div>
 
-        <!-- 插件列表容器 -->
-        <div id="plugin-list-container">
-            <!-- JS 将在此处生成内容 -->
-        </div>
+        <div id="plugin-list-container"></div>
         
         <div style="height: 60px;"></div>
     </div>
@@ -691,12 +385,10 @@
         </div>
     </div>
 
-    <!-- 底部悬浮按钮 -->
     <div class="fab" id="fab-btn" onclick="openModal()">
         <i class="fa-solid fa-plus"></i>
     </div>
 
-    <!-- 添加插件模态框 -->
     <div class="modal-overlay" id="add-modal">
         <div class="modal">
             <h2>添加新模块</h2>
@@ -727,10 +419,8 @@
         </div>
     </div>
 
-    <!-- 消息提示 -->
     <div id="toast" class="toast">操作成功</div>
 
-    <!-- 底部 Tab 栏 -->
     <div class="tab-bar">
         <div class="tab-item active" onclick="switchTab('home')">
             <div class="tab-icon"><i class="fa-solid fa-house"></i></div>
@@ -747,69 +437,19 @@
     </div>
 
     <script>
-        // 默认数据
         const defaultPlugins = [
-            {
-                id: 1,
-                name: "L1angxha 跨进程读取",
-                subName: "凉茶IOS26修补权限",
-                size: "331.11 KB",
-                tags: ["Core"],
-                enabled: true,
-                author: "@L1angcha",
-                desc: "此插件为默认插件 高于18.0系统都需要刷入此插件 目的为强制刷入 TROB 漏洞读取权限。"
-            },
-            {
-                id: 2,
-                name: "CoreShift 缓存清理器",
-                subName: "",
-                size: "201.32 KB",
-                tags: ["启用"],
-                enabled: true,
-                author: "t.me/Diky_I",
-                desc: "手动缓存维护模块。点击操作按钮以修剪系统缓存并移除过大的应用缓存目录。"
-            },
-            {
-                id: 3,
-                name: "IOS-DRIVER-ANGLE",
-                subName: "",
-                size: "369.23 KB",
-                tags: ["启用"],
-                enabled: true,
-                author: "@LIMITGAMING",
-                desc: "在安卓手机上体验 iPhone 游戏的感觉！本模块通过 iOS 风格 Metal 渲染、超灵敏的 ANGLE 以及 GPU 调校，大幅提升设备性能。"
-            },
-            {
-                id: 4,
-                name: "性能优化 AI",
-                subName: "",
-                size: "1.39 MB",
-                tags: ["AI", "WebUI"],
-                enabled: false,
-                author: "@reljawa",
-                desc: "体验高级 WebUI 菜单，旨在提升游戏性能、优化功耗，并通过 AI 驱动的游戏模式自动切换。"
-            },
-            {
-                id: 5,
-                name: "卫星地球 (Network)",
-                subName: "",
-                size: "8.20 MB",
-                tags: ["Network"],
-                enabled: true,
-                author: "TerX Official",
-                desc: "增强您的网络与数据，稳定蜂窝数据与 WiFi，改善游戏信号延迟。"
-            }
+            { id: 1, name: "L1angxha 跨进程读取", subName: "凉茶IOS26修补权限", size: "331.11 KB", tags: ["Core"], enabled: true, author: "@L1angcha", desc: "此插件为默认插件 高于18.0系统都需要刷入此插件 目的为强制刷入 TROB 漏洞读取权限。" },
+            { id: 2, name: "CoreShift 缓存清理器", subName: "", size: "201.32 KB", tags: ["启用"], enabled: true, author: "t.me/Diky_I", desc: "手动缓存维护模块。点击操作按钮以修剪系统缓存并移除过大的应用缓存目录。" },
+            { id: 3, name: "IOS-DRIVER-ANGLE", subName: "", size: "369.23 KB", tags: ["启用"], enabled: true, author: "@LIMITGAMING", desc: "在安卓手机上体验 iPhone 游戏的感觉！本模块通过 iOS 风格 Metal 渲染、超灵敏的 ANGLE 以及 GPU 调校，大幅提升设备性能。" },
+            { id: 4, name: "性能优化 AI", subName: "", size: "1.39 MB", tags: ["AI", "WebUI"], enabled: false, author: "@reljawa", desc: "体验高级 WebUI 菜单，旨在提升游戏性能、优化功耗，并通过 AI 驱动的游戏模式自动切换。" },
+            { id: 5, name: "卫星地球 (Network)", subName: "", size: "8.20 MB", tags: ["Network"], enabled: true, author: "TerX Official", desc: "增强您的网络与数据，稳定蜂窝数据与 WiFi，改善游戏信号延迟。" }
         ];
 
-        // 初始化数据（从 LocalStorage 读取，如果没有则使用默认）
         let plugins = JSON.parse(localStorage.getItem('liangcha_plugins')) || defaultPlugins;
 
-        // 渲染插件列表
         function renderPlugins(filterText = '') {
             const container = document.getElementById('plugin-list-container');
             container.innerHTML = '';
-
-            // 更新主页数量
             document.getElementById('module-count').innerText = plugins.length;
 
             const filteredPlugins = plugins.filter(p => 
@@ -849,7 +489,6 @@
             });
         }
 
-        // 切换 Tab 逻辑
         function switchTab(tabName) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
@@ -858,7 +497,7 @@
             if (tabName === 'home') {
                 document.getElementById('home-view').classList.add('active');
                 document.querySelectorAll('.tab-item')[0].classList.add('active');
-                renderPlugins(); // 刷新以更新计数
+                renderPlugins(); 
             } else if (tabName === 'plugins') {
                 document.getElementById('plugins-view').classList.add('active');
                 document.querySelectorAll('.tab-item')[1].classList.add('active');
@@ -870,16 +509,8 @@
             }
         }
 
-        // 模态框逻辑
-        function openModal() {
-            document.getElementById('add-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('add-modal').style.display = 'none';
-            clearForm();
-        }
-
+        function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('add-modal').style.display = 'none'; clearForm(); }
         function clearForm() {
             document.getElementById('p-name').value = '';
             document.getElementById('p-tag').value = '';
@@ -888,7 +519,6 @@
             document.getElementById('p-desc').value = '';
         }
 
-        // 保存新插件
         function savePlugin() {
             const name = document.getElementById('p-name').value;
             const tagStr = document.getElementById('p-tag').value;
@@ -899,7 +529,7 @@
             if(!name) { showToast("请输入插件名称"); return; }
 
             const newPlugin = {
-                id: Date.now(), // 简单的 ID 生成
+                id: Date.now(),
                 name: name,
                 subName: "",
                 size: size || "Unknown",
@@ -916,7 +546,6 @@
             showToast("插件添加成功");
         }
 
-        // 删除插件
         function deletePlugin(id) {
             if(confirm('确定要删除此模块吗？')) {
                 plugins = plugins.filter(p => p.id !== id);
@@ -926,7 +555,6 @@
             }
         }
 
-        // 切换开关状态
         function togglePlugin(id) {
             const p = plugins.find(p => p.id === id);
             if(p) {
@@ -935,12 +563,8 @@
             }
         }
 
-        // 数据持久化
-        function saveData() {
-            localStorage.setItem('liangcha_plugins', JSON.stringify(plugins));
-        }
+        function saveData() { localStorage.setItem('liangcha_plugins', JSON.stringify(plugins)); }
 
-        // 搜索功能
         function toggleSearch() {
             const container = document.getElementById('search-container');
             const isVisible = container.style.display === 'block';
@@ -952,17 +576,13 @@
             renderPlugins(e.target.value);
         });
 
-        // 提示消息
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2000);
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
 
-        // 初始化
         renderPlugins();
     </script>
 </body>
